@@ -20,5 +20,8 @@ export default defineConfig({
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },
+        hmr: {
+            host: 'https://8b82-31-77-50-232.ngrok-free.app'
+        }
     },
 });

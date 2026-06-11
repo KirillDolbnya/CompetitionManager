@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'vk' => [
+        'secret' => env('VK_SECRET_KEY'),
+        'token' => env('VK_COMMUNITY_TOKEN'),
+        'version' => env('VK_API_VIRSION'),
+        'confirmation' => env('VK_CONFIRMATION_CODE'),
+        'admin' => env('VK_ADMIN_PASS'),
+    ]
+
 ];
