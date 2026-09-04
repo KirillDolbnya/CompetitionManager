@@ -2,6 +2,8 @@
 
 namespace App\Vk\States;
 
+use App\Repositories\CompetitionNotificationRepository;
+use App\Repositories\VkUserRepository;
 use App\Vk\Bot;
 use App\Vk\Builders\KeyboardBuilder;
 use App\Vk\Context\DialogContext;
@@ -15,6 +17,8 @@ class StartState implements StateInterface
     public function __construct(
         private readonly Bot $bot,
         private readonly KeyboardBuilder $keyboardBuilder,
+        private readonly CompetitionNotificationRepository $competitionNotificationRepository,
+        private readonly VkUserRepository $vkUserRepository,
     )
     {
     }
@@ -37,6 +41,10 @@ class StartState implements StateInterface
                 Cache::put("attachment_{$competition->id}", $attachment, $endAt);
             }
         }
+
+        $user = $this->vkUserRepository->getByVkId($context->getUserId());
+
+        $this->competitionNotificationRepository->firstOrCreate($competition->id, $user->id);
 
         $message = "🏆 Добро пожаловать на {$competition->name} соревнования";
 

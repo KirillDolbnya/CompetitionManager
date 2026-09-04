@@ -1,7 +1,7 @@
 <?php
 
+use App\Jobs\SendCompetitionNotifications;
 use App\Models\Competition;
-use App\Services\VkNotificationService;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -36,16 +36,12 @@ return Application::configure(basePath: dirname(__DIR__))
         })->daily();
 
         $schedule->call(function () {
-            Competition::whereDate('start_at', now())
-                ->whereNull('notified_at')
+            Competition::whereDate('end_at', today())
                 ->get()
                 ->each(function (Competition $competition) {
-                    app(VkNotificationService::class)
-                        ->sendCompetitionStartMessage($competition);
-
-                    $competition->update(['notified_at' => now()]);
+                    SendCompetitionNotifications::dispatch($competition);
                 });
-        })->dailyAt('08:00');
+        })->dailyAt('21:00');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

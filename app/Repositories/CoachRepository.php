@@ -28,6 +28,11 @@ class CoachRepository
             ->get();
     }
 
+    public function getById(int $id, int $competitionId): Coach
+    {
+        return Coach::query()->where('id', $id)->where('competition_id', $competitionId)->firstOrFail();
+    }
+
     public function getPlayersAndRelation(int $coachId, int $competitionId): Collection
     {
         $coachWithPlayers = Coach::where([

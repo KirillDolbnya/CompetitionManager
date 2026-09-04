@@ -41,7 +41,8 @@ class SelectPlayerFromListState implements StateInterface
         }
 
         try {
-            $player = $this->playerRepository->getById((int) $playerId);
+            $competition = $context->getCompetition();
+            $player = $this->playerRepository->getById((int) $playerId, $competition->id);
             $message = $this->buildPlayerCard($player);
 
             $this->bot->sendMessage(

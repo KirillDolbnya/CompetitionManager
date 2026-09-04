@@ -6,6 +6,7 @@ use App\Vk\States\EnterPasswordState;
 use App\Vk\States\MenuState;
 use App\Vk\States\SearchCoachState;
 use App\Vk\States\SearchPlayerState;
+use App\Vk\States\SelectCoachFromListState;
 use App\Vk\States\SelectPlayerFromListState;
 use App\Vk\States\StartState;
 
@@ -21,6 +22,8 @@ enum VkBotState: string
 
     case SELECT_PLAYER = 'select_player';
 
+    case SELECT_COACH = 'select_coach';
+
     case MENU = 'menu';
 
     public static function find(string $command): self|null
@@ -35,6 +38,10 @@ enum VkBotState: string
             return self::SELECT_PLAYER;
         }
 
+        if (preg_match('/^coach_\d+$/', $command)) {
+            return self::SELECT_COACH;
+        }
+
         return null;
     }
 
@@ -46,6 +53,7 @@ enum VkBotState: string
             self::ENTER_PASSWORD => EnterPasswordState::class,
             self::SEARCH_COACH => SearchCoachState::class,
             self::SELECT_PLAYER => SelectPlayerFromListState::class,
+            self::SELECT_COACH => SelectCoachFromListState::class,
             self::MENU => MenuState::class,
         };
     }

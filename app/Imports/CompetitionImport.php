@@ -153,8 +153,17 @@ class CompetitionImport implements ToCollection
             $rowErrors[] = "Строка {$rowNumber}: некорректное ФИО спортсмена";
         }
 
-        if(!empty($rowErrors) || !$this->currentDiscipline || !$this->currentCategory) {
+//        if(!empty($rowErrors) || !$this->currentDiscipline || !$this->currentCategory) {
+//            $this->errors = array_merge($this->errors, $rowErrors);
+//            return;
+//        }
+
+        if (!empty($rowErrors)) {
             $this->errors = array_merge($this->errors, $rowErrors);
+            return;
+        }
+
+        if (!$this->currentDiscipline || !$this->currentCategory) {
             return;
         }
 
@@ -167,8 +176,14 @@ class CompetitionImport implements ToCollection
         $playerDTO->fullName = Str::title(trim($playerName));
         $playerDTO->competitionId = $this->competition_id;
         $playerDTO->coachId = $coach->id;
-
         $player = ($this->playerService)($playerDTO);
+
+        if ($coach->id !== $player->coach->id) {
+            $this->errors[] = "Строка {$rowNumber}: спортсмен не может быть связан с разными тренерами";
+
+            return;
+        }
+
         $this->playerService->attachToCategoryAndDiscipline($player, $this->currentDiscipline, $this->currentCategory);
     }
 }

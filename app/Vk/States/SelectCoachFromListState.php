@@ -11,9 +11,9 @@ use App\Vk\Context\DialogContext;
 use App\Vk\StateManager;
 use App\Vk\States\Interface\StateInterface;
 use App\Vk\States\Traits\HasChunkedSending;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class SearchCoachState implements StateInterface
+class SelectCoachFromListState implements StateInterface
 {
     use HasChunkedSending;
 
@@ -28,36 +28,23 @@ class SearchCoachState implements StateInterface
 
     public function enter(DialogContext $context, StateManager $stateManager): void
     {
-        $message = "📝 Введите фио тренера";
-
-        $this->bot->sendMessage(
-            $message,
-            $context->getUserId(),
-            $this->keyboardBuilder
-                ->textButton('◀️ Назад', 'start', 'secondary')
-                ->build(),
-        );
     }
 
     public function execute(DialogContext $context, StateManager $stateManager): void
     {
-        $competition = $context->getCompetition();
-        $message = trim($context->getMessage());
+        $coachId = $context->getCoachId();
 
-        $words = preg_split('/\s+/', trim($message));
-        if(count($words) < 2){
-            $this->bot->sendMessage('⚠️ Пожалуйста, введите имя и фамилию тренера', $context->getUserId());
+        if ($coachId === null) {
+            $this->bot->sendMessage(
+                '👥 Выберите тренера из списка',
+                $context->getUserId(),
+            );
             return;
         }
 
-        $coaches = $this->coachRepository->getLikeName($message, $competition->id);
-        if ($coaches->isEmpty()){
-            $this->bot->sendMessage('⚠️ Тренер не найден, введите имя и фамилию еще раз', $context->getUserId());
-            return;
-        }
-
-        if($coaches->count() === 1){
-            $coach = $coaches->first();
+        try {
+            $competition = $context->getCompetition();
+            $coach = $this->coachRepository->getById((int)$coachId, $competition->id);
             $players = $this->coachRepository->getPlayersAndRelation($coach->id, $competition->id);
             $callback = $this->getChunkCallback($coach->full_name);
 
@@ -75,17 +62,13 @@ class SearchCoachState implements StateInterface
             );
 
             $stateManager->changeState(VkBotState::MENU);
-        }else{
-            $message = '👥 Выберите тренера';
-            $keyboard = $this->buildMultipleCoachesKeyboard($coaches);
-
+        }catch (ModelNotFoundException $e){
             $this->bot->sendMessage(
-                $message,
+                '⚠️ Тренер не найден, попробуйте еще раз!',
                 $context->getUserId(),
-                $keyboard,
             );
 
-            $stateManager->changeState(vkBotState::SELECT_COACH);
+            $stateManager->changeState(VkBotState::SEARCH_COACH);
             return;
         }
     }
@@ -103,16 +86,5 @@ class SearchCoachState implements StateInterface
                 $output->addIdent();
             }
         };
-    }
-
-    private function buildMultipleCoachesKeyboard(Collection $coaches): array
-    {
-        foreach ($coaches as $coach){
-            $this->keyboardBuilder
-                ->textButton("👤 {$coach->full_name}", "select_coach", 'secondary', ["coach_id" => $coach->id])
-                ->row();
-        }
-
-        return $this->keyboardBuilder->build(true);
     }
 }

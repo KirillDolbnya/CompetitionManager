@@ -28,11 +28,6 @@ RUN install-php-extensions \
     pdo_mysql \
     imagick
 
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y --no-install-recommends nodejs \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /var/www/
 
 ARG DOCKER_HOST_USER=app

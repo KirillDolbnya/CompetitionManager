@@ -42,6 +42,11 @@ class DialogContext
         return $this->event->getPayload()['player_id'] ?? null;
     }
 
+    public function getCoachId(): string|null
+    {
+        return $this->event->getPayload()['coach_id'] ?? null;
+    }
+
     public function getCompetition(): Competition
     {
         return $this->competition;
@@ -73,6 +78,15 @@ class DialogContext
     {
         $this->user->update([
             'state' => $state->value
+        ]);
+
+        $this->user->save();
+    }
+
+    public function cleanUserState(): void
+    {
+        $this->user->update([
+           'state' => null
         ]);
 
         $this->user->save();

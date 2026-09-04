@@ -19,6 +19,48 @@ services:
         depends_on:
             -   db
 
+    scheduler:
+        build:
+            context: .
+            args:
+                DOCKER_HOST_USER: ${DOCKER_HOST_USER:-app}
+                DOCKER_HOST_UID: ${DOCKER_HOST_UID:-1000}
+                DOCKER_HOST_GROUP: ${DOCKER_HOST_GROUP:-app}
+                DOCKER_HOST_GID: ${DOCKER_HOST_GID:-1000}
+        container_name: laravel_scheduler
+        working_dir: /var/www
+        volumes:
+            - ./:/var/www
+            - ./storage:/var/www/storage
+        environment:
+            TZ: Europe/Moscow
+            PHP_INI_SCAN_DIR: ":/usr/local/etc/php/custom.d"
+        command: php artisan schedule:work
+        restart: unless-stopped
+        depends_on:
+            - db
+
+    queue:
+        build:
+            context: .
+            args:
+                DOCKER_HOST_USER: ${DOCKER_HOST_USER:-app}
+                DOCKER_HOST_UID: ${DOCKER_HOST_UID:-1000}
+                DOCKER_HOST_GROUP: ${DOCKER_HOST_GROUP:-app}
+                DOCKER_HOST_GID: ${DOCKER_HOST_GID:-1000}
+        container_name: laravel_queue
+        working_dir: /var/www
+        volumes:
+            - ./:/var/www
+            - ./storage:/var/www/storage
+        environment:
+            TZ: Europe/Moscow
+            PHP_INI_SCAN_DIR: ":/usr/local/etc/php/custom.d"
+        command: php artisan queue:work
+        restart: unless-stopped
+        depends_on:
+            - db
+
     nginx:
         image: nginx:alpine
         container_name: laravel_nginx
@@ -44,19 +86,6 @@ services:
         volumes:
             -   db_data:/var/lib/mysql
 
-    node:
-        image: node:22
-        container_name: laravel_node
-        working_dir: /var/www
-        volumes:
-            -   ./:/var/www
-            - node_modules:/var/www/node_modules
-        command: sh -c "npm install && npm run dev"
-        ports:
-            - "5173:5173"
-        tty: true
-
 volumes:
     db_data:
-    node_modules:
 

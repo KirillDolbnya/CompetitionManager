@@ -6,6 +6,7 @@ use App\Exceptions\CompetitionImportException;
 use App\Filament\Resources\Competitions\CompetitionResource;
 use App\Imports\CompetitionImport;
 use App\Models\Competition;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +21,8 @@ class CreateCompetition extends CreateRecord
     protected static string $resource = CompetitionResource::class;
 
     protected static bool $canCreateAnother = false;
+
+    public array $importErrors = [];
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
@@ -54,16 +57,18 @@ class CreateCompetition extends CreateRecord
                Storage::disk('public')->delete($data['file_path']);
            }
 
-           if (isset($data['image_path'])){
-               Storage::disk('public')->delete($data['image_path']);
-           }
+           $this->form->getComponent('file_path')?->state(null);
 
-           Notification::make()
-               ->title('Эксель файл содержит ошибки')
-               ->body(implode('<br>', $exception->errors()))
-               ->danger()
-               ->persistent()
-               ->send();
+//           Notification::make()
+//               ->title('Эксель файл содержит ошибки')
+//               ->body(view('filament.notifications.import-errors', ['errors' => $exception->errors()]))
+//               ->danger()
+//               ->persistent()
+//               ->send();
+
+           $this->importErrors = $exception->errors();
+
+           $this->mountAction('excelErrorsModal');
 
            $this->halt();
        }catch (\Throwable $exception){
@@ -71,7 +76,7 @@ class CreateCompetition extends CreateRecord
                Storage::disk('public')->delete($data['file_path']);
            }
 
-           if (isset($data['image_path'])){
+           if (isset($data['image_path'])) {
                Storage::disk('public')->delete($data['image_path']);
            }
 
@@ -87,4 +92,21 @@ class CreateCompetition extends CreateRecord
            $this->halt();
        }
    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('excelErrorsModal')
+                ->modalHeading('Ошибки импорта Excel-файла')
+                ->modalWidth('4xl')
+                ->modalSubmitAction(false)
+                ->modalContent(fn () => view('filament.modals.import-errors', [
+                    'errors' => $this->importErrors
+                ]))
+                ->extraAttributes([
+                    'class' => 'hidden',
+                    'style' => 'display: none !important;'
+                ]),
+        ];
+    }
 }

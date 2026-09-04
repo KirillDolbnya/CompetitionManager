@@ -45,13 +45,13 @@ class SearchPlayerState implements StateInterface
         $message = trim($context->getMessage());
         $words = preg_split('/\s+/', $message);
         if (count($words) < 2 || empty($message)) {
-            $this->bot->sendMessage('⚠️ Пожалуйста, введите имя и фамилию спортсмена', $context->getUserId());
+            $this->bot->sendMessage('⚠️ Пожалуйста, введите ❗ИМЯ и ФАМИЛИЮ❗ спортсмена', $context->getUserId());
             return;
         }
 
         $players = $this->playerRepository->getLikeName($message, $competition->id);
         if ($players->isEmpty()){
-            $this->bot->sendMessage('⚠️ Спортсмен не найден, введите ФИО еще раз', $context->getUserId());
+            $this->bot->sendMessage('⚠️ Спортсмен не найден, введите ❗ИМЯ и ФАМИЛИЮ❗ еще раз', $context->getUserId());
             return;
         }
 

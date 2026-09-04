@@ -26,6 +26,8 @@ class EnsureCompetitionExists
             ->build();
 
         if (!$currentCompetition) {
+            $context->cleanUserState();
+
             $this->bot->sendMessage(
                 '⚠️ В данный момент нет активных соревнований, бот отдыхает!',
                 $context->getUserId(),

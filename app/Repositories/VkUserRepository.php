@@ -21,4 +21,9 @@ class VkUserRepository
 
         return $user;
     }
+
+    public function getByVkId(int $id): VkUser
+    {
+        return VkUser::query()->where('vk_id', $id)->firstOrFail();
+    }
 }

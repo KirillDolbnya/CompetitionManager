@@ -33,9 +33,9 @@ class PlayerRepository
             ->get();
     }
 
-    public function getById(int $id): Player
+    public function getById(int $id, int $competitionId): Player
     {
-        return Player::findOrFail($id);
+        return Player::query()->where('id', $id)->where('competition_id', $competitionId)->firstOrFail();
     }
 
     public function getCoach(int $id): Coach
