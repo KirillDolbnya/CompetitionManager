@@ -12,3 +12,5 @@ storage/framework/sessions/*
 storage/framework/testing/*
 
 bootstrap/cache/*
+
+certbot/
